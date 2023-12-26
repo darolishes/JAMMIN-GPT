@@ -1,5 +1,5 @@
 from openai import OpenAI
-
+from litellm import LiteLLM
 
 # https://platform.openai.com/docs/models
 # https://openai.com/pricing
@@ -70,17 +70,10 @@ MESSAGES = [
 ]
 
 
-def get_completion(
-    prompt,
-    model_num=3,
-    system=None,
-    frequency_penalty=0.0,
-    presence_penalty=0.0,
-):
+def get_completion(prompt, model_num=3, system=None, frequency_penalty=0.0, presence_penalty=0.0):
     if model_num == 3:
         model = "gpt-3.5-turbo"
     elif model_num == 4:
-        # model = "gpt-4"
         model = "gpt-4-1106-preview"
     else:
         raise Exception("Invalid model_num")
@@ -88,20 +81,16 @@ def get_completion(
     if system is None:
         messages = [x for x in MESSAGES]
     else:
-        messages = [{"role": "system", "content": system}, 
+        messages = [{"role": "system", "content": system},
                     {"role": "user", "content": prompt}]
 
-    client = OpenAI()
-
-    completion = client.chat.completions.create(
-        model=model,
-        messages=messages,
+    # Hier verwenden Sie LiteLLM anstelle von OpenAI
+    litellm_client = LiteLLM(model_name=model)
+    completion = litellm_client.complete(
+        prompt=prompt,
+        max_tokens=50,  # Setzen Sie die maximale Token-Anzahl
         temperature=0.7,
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
     )
-    # usage = completion["usage"]
-    # cost = calculate_cost(usage, model)
-    # print("API cost:" cost)
-
     return completion
